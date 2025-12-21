@@ -105,8 +105,9 @@ function draw() {
   // Draw connecting energy lines
   drawEnergyConnections();
 
-  time += 0.016;
-  hexagramAngle += 0.003;
+  let dt = deltaTime / 1000;
+  time += dt;
+  hexagramAngle += 0.003 * dt * 60;
 }
 
 function drawStars() {
@@ -296,26 +297,18 @@ function drawOccultRings() {
 
   for (let r = 0; r < 3; r++) {
     let ringRadius = 70 + r * 20;
-    let segments = 60;
 
-    beginShape();
-    for (let i = 0; i <= segments; i++) {
-      let angle = (TWO_PI / segments) * i;
-      let x = cos(angle) * ringRadius;
-      let y = sin(angle) * ringRadius * 0.25;
-
-      // Only draw front half or back half based on y
-      if (i === 0 || i === segments) {
-        vertex(x, y);
-      } else if (y > 0) {
-        // Front of rings
-        let alpha = 50 + sin(angle * 8 + time * 3) * 20;
-        stroke(280, 50, 60, alpha);
-        strokeWeight(3 - r * 0.5);
-        vertex(x, y);
-      }
+    // Front of rings - draw as individual line segments for varying alpha
+    strokeWeight(3 - r * 0.5);
+    for (let a = 0; a < PI; a += 0.05) {
+      let alpha = 50 + sin(a * 8 + time * 3) * 20;
+      stroke(280, 50, 60, alpha);
+      let x1 = cos(a) * ringRadius;
+      let y1 = sin(a) * ringRadius * 0.25;
+      let x2 = cos(a + 0.05) * ringRadius;
+      let y2 = sin(a + 0.05) * ringRadius * 0.25;
+      line(x1, y1, x2, y2);
     }
-    endShape();
 
     // Back of rings (behind planet)
     stroke(280, 40, 30, 30);

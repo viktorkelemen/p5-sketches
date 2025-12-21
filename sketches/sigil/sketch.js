@@ -102,8 +102,9 @@ function draw() {
   // Draw energy lines connecting elements
   drawEnergyLines();
 
-  time += 0.016;
-  pentagramRotation += 0.002;
+  let dt = deltaTime / 1000;
+  time += dt;
+  pentagramRotation += 0.002 * dt * 60;
 }
 
 function drawAmbientGlow() {
@@ -404,5 +405,10 @@ function mousePressed() {
     p.vy = random(-3, 3);
     p.life = 255;
     particles.push(p);
+  }
+
+  // Limit particle count to prevent performance issues
+  while (particles.length > 300) {
+    particles.shift();
   }
 }

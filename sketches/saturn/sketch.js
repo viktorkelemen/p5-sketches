@@ -101,7 +101,7 @@ function draw() {
   // Draw mystical symbols around Saturn
   drawMysticalSymbols();
 
-  time += 0.016;
+  time += deltaTime / 1000;
 }
 
 function drawSaturnBody() {
@@ -134,8 +134,6 @@ function drawSaturnBody() {
 }
 
 function drawRings(isBack) {
-  push();
-
   for (let particle of ringParticles) {
     particle.angle += particle.speed;
 
@@ -161,8 +159,6 @@ function drawRings(isBack) {
       circle(x, y, particle.size);
     }
   }
-
-  pop();
 }
 
 function drawMysticalSymbols() {
@@ -203,11 +199,8 @@ function drawMysticalSymbols() {
 
 function drawSaturnSymbol(size) {
   // Saturn astrological symbol (h with cross)
-  beginShape();
   // Vertical line
-  vertex(0, -size);
-  vertex(0, size * 0.6);
-  endShape();
+  line(0, -size, 0, size * 0.6);
 
   // Cross at bottom
   line(-size * 0.4, size * 0.3, size * 0.4, size * 0.3);
