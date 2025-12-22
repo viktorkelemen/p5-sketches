@@ -102,7 +102,8 @@ function draw() {
   // Draw energy lines connecting elements
   drawEnergyLines();
 
-  let dt = deltaTime / 1000;
+  // Clamp deltaTime to prevent animation jumps after tab switching
+  let dt = min(deltaTime / 1000, 0.1);
   time += dt;
   pentagramRotation += 0.002 * dt * 60;
 }

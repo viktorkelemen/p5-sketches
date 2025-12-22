@@ -105,7 +105,8 @@ function draw() {
   // Draw connecting energy lines
   drawEnergyConnections();
 
-  let dt = deltaTime / 1000;
+  // Clamp deltaTime to prevent animation jumps after tab switching
+  let dt = min(deltaTime / 1000, 0.1);
   time += dt;
   hexagramAngle += 0.003 * dt * 60;
 }

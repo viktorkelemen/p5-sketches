@@ -186,7 +186,8 @@ function qrDecomposition(A, n) {
     }
     norm = sqrt(norm);
 
-    if (norm > 0.0001) {
+    // Handle zero and near-zero norms to prevent division issues
+    if (norm > 0) {
       for (let i = 0; i < n; i++) {
         Q[i][j] = v[i] / norm;
       }
