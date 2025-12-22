@@ -48,6 +48,10 @@ function cMul(a, b) {
 
 function cDiv(a, b) {
   let denom = b.re * b.re + b.im * b.im;
+  // Handle division by zero - return infinity representation
+  if (denom < 1e-20) {
+    return { re: Infinity, im: Infinity };
+  }
   return {
     re: (a.re * b.re + a.im * b.im) / denom,
     im: (a.im * b.re - a.re * b.im) / denom
@@ -179,8 +183,9 @@ function evaluateFunction(z) {
 function drawDomainColoring() {
   loadPixels();
 
-  for (let px = 0; px < width; px++) {
-    for (let py = 0; py < height; py++) {
+  // Iterate py (height) in outer loop for better cache locality with row-major pixel buffer
+  for (let py = 0; py < height; py++) {
+    for (let px = 0; px < width; px++) {
       let x = map(px, 0, width, minX, maxX);
       let y = map(py, 0, height, maxY, minY); // Flip y
 

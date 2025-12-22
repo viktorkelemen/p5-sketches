@@ -46,7 +46,8 @@ function drawFractal() {
         if (x < 0.0001 || x > 0.9999) x = 0.5;
 
         let deriv = abs(r * (1 - 2 * x));
-        if (deriv > 0) {
+        // Only add to Lyapunov sum if derivative is positive (avoid log(0) = -Infinity)
+        if (deriv > 1e-10) {
           lyapunov += log(deriv);
           count++;
         }

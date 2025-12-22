@@ -82,6 +82,7 @@ function initGasket() {
   // Process queue
   let iterations = 0;
   let maxIterations = 5000;
+  let maxQueueSize = 10000; // Prevent unbounded queue growth
 
   while (queue.length > 0 && iterations < maxIterations) {
     let triplet = queue.shift();
@@ -91,9 +92,12 @@ function initGasket() {
       if (nc && nc.r > minRadius && nc.r < min(width, height) / 2) {
         if (!isDuplicate(nc)) {
           circles.push(nc);
-          queue.push([triplet[0], triplet[1], nc]);
-          queue.push([triplet[0], triplet[2], nc]);
-          queue.push([triplet[1], triplet[2], nc]);
+          // Only add to queue if we haven't exceeded the queue size limit
+          if (queue.length < maxQueueSize) {
+            queue.push([triplet[0], triplet[1], nc]);
+            queue.push([triplet[0], triplet[2], nc]);
+            queue.push([triplet[1], triplet[2], nc]);
+          }
         }
       }
     }

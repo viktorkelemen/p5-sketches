@@ -30,9 +30,12 @@ function drawFractal() {
 
       // Burning Ship iteration: z = (|Re(z)| + i|Im(z)|)^2 + c
       while (x * x + y * y <= 4 && iteration < maxIterations) {
-        let xTemp = x * x - y * y + x0;
-        y = abs(2 * x * y) + y0;
-        x = abs(xTemp);
+        // Take absolute values BEFORE squaring (key difference from Mandelbrot)
+        let absX = abs(x);
+        let absY = abs(y);
+        let xTemp = absX * absX - absY * absY + x0;
+        y = 2 * absX * absY + y0;
+        x = xTemp;
         iteration++;
       }
 

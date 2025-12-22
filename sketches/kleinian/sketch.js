@@ -76,6 +76,10 @@ function complexSub(a, b) {
 
 function complexDiv(a, b) {
   let denom = b.re * b.re + b.im * b.im;
+  // Handle division by zero in Möbius transformations
+  if (denom < 1e-20) {
+    return createComplex(Infinity, Infinity);
+  }
   return createComplex(
     (a.re * b.re + a.im * b.im) / denom,
     (a.im * b.re - a.re * b.im) / denom
