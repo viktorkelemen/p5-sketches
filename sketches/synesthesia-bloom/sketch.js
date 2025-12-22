@@ -36,8 +36,7 @@ function setup() {
   for (let i = 0; i < 12; i++) {
     spawnPoints.push({
       x: map(i, 0, 11, width * 0.1, width * 0.9),
-      lastStem: 0,
-      stemCount: 0
+      lastStem: 0
     });
   }
 
@@ -46,14 +45,31 @@ function setup() {
 }
 
 function startAudio() {
-  userStartAudio().then(() => {
-    mic = new p5.AudioIn();
-    mic.start(() => {
-      fft.setInput(mic);
-      started = true;
-      document.getElementById('start-overlay').style.display = 'none';
+  let overlay = document.getElementById('start-overlay');
+  let statusText = overlay.querySelector('.pulse');
+  statusText.textContent = 'Requesting microphone access...';
+
+  userStartAudio()
+    .then(() => {
+      mic = new p5.AudioIn();
+      mic.start(
+        () => {
+          fft.setInput(mic);
+          started = true;
+          overlay.style.display = 'none';
+        },
+        (err) => {
+          console.error('Mic start error:', err);
+          statusText.textContent = 'Microphone access denied. Please refresh and allow access.';
+          statusText.style.color = '#ff6b6b';
+        }
+      );
+    })
+    .catch((err) => {
+      console.error('Audio context error:', err);
+      statusText.textContent = 'Audio initialization failed. Please refresh and try again.';
+      statusText.style.color = '#ff6b6b';
     });
-  });
 }
 
 function mousePressed() {
@@ -159,7 +175,6 @@ function spawnStem() {
   // Don't spawn too many from same point too quickly
   if (time - sp.lastStem < 0.5) return;
   sp.lastStem = time;
-  sp.stemCount++;
 
   let x = sp.x + random(-30, 30);
   let groundY = height - random(10, 40);
@@ -214,12 +229,19 @@ function spawnBloom() {
   // Spawn at or near the top of the stem
   let pt = stem.points[stem.points.length - 1];
 
+  let petalCount = floor(random(5, 12));
+  let petalLengths = [];
+  for (let i = 0; i < petalCount; i++) {
+    petalLengths.push(random(0.7, 1));
+  }
+
   blooms.push({
     x: pt.x + random(-10, 10),
     y: pt.y + random(-20, 10),
     radius: 0,
     maxRadius: random(20, 60) * (0.5 + highMidEnergy),
-    petalCount: floor(random(5, 12)),
+    petalCount: petalCount,
+    petalLengths: petalLengths,
     rotation: random(TWO_PI),
     rotationSpeed: random(-0.02, 0.02),
     hue: random(300, 350), // Magentas, hot pinks
@@ -337,9 +359,14 @@ function updateAndDrawStems() {
       strokeWeight(stem.thickness);
 
       beginShape();
+      // Duplicate first point for proper curve start
+      curveVertex(stem.points[0].x, stem.points[0].y);
       for (let pt of stem.points) {
         curveVertex(pt.x, pt.y);
       }
+      // Duplicate last point for proper curve end
+      let last = stem.points[stem.points.length - 1];
+      curveVertex(last.x, last.y);
       endShape();
 
       // Glow effect
@@ -347,9 +374,11 @@ function updateAndDrawStems() {
       strokeWeight(stem.thickness + 4);
 
       beginShape();
+      curveVertex(stem.points[0].x, stem.points[0].y);
       for (let pt of stem.points) {
         curveVertex(pt.x, pt.y);
       }
+      curveVertex(last.x, last.y);
       endShape();
     }
   }
@@ -380,11 +409,18 @@ function updateAndDrawLeaves() {
       fill(leaf.hue, leaf.sat, 60, alpha);
       arc(leaf.size / 2, 0, leaf.size, leaf.size * 0.6, -PI/3, PI/3, PIE);
     } else if (leaf.shape === 1) {
-      // Crescent
+      // Crescent - draw as a proper crescent shape
       fill(leaf.hue, leaf.sat, 55, alpha);
-      arc(0, 0, leaf.size, leaf.size, -PI/2, PI/2);
-      fill(0, 0, 0, 30);
-      arc(leaf.size * 0.2, 0, leaf.size * 0.7, leaf.size * 0.7, -PI/2, PI/2);
+      beginShape();
+      // Outer arc
+      for (let a = -PI/2; a <= PI/2; a += 0.1) {
+        vertex(cos(a) * leaf.size * 0.5, sin(a) * leaf.size * 0.5);
+      }
+      // Inner arc (reverse direction)
+      for (let a = PI/2; a >= -PI/2; a -= 0.1) {
+        vertex(leaf.size * 0.15 + cos(a) * leaf.size * 0.35, sin(a) * leaf.size * 0.35);
+      }
+      endShape(CLOSE);
     } else {
       // Angular/triangular
       fill(leaf.hue, leaf.sat, 65, alpha);
@@ -427,7 +463,7 @@ function updateAndDrawBlooms() {
       strokeWeight(2);
       for (let i = 0; i < bloom.petalCount; i++) {
         let angle = (TWO_PI / bloom.petalCount) * i;
-        let len = r * random(0.7, 1);
+        let len = r * bloom.petalLengths[i];
         line(0, 0, cos(angle) * len, sin(angle) * len);
       }
       // Center glow
@@ -474,6 +510,7 @@ function updateAndDrawPollen() {
     p.x += p.vx + sin(time * 3 + p.x * 0.01) * 0.3;
     p.y += p.vy;
     p.vx += random(-0.1, 0.1);
+    p.vx = constrain(p.vx, -2, 2); // Clamp to prevent runaway drift
 
     // Fade
     let age = time - p.birth;
@@ -522,8 +559,7 @@ function windowResized() {
   for (let i = 0; i < 12; i++) {
     spawnPoints.push({
       x: map(i, 0, 11, width * 0.1, width * 0.9),
-      lastStem: 0,
-      stemCount: 0
+      lastStem: 0
     });
   }
 }
