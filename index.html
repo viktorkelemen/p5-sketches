@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Saturn & Witchcraft Visualizations</title>
+  <title>Mathematical Visualizations</title>
   <style>
     * {
       margin: 0;
@@ -44,56 +44,57 @@
     .container {
       position: relative;
       z-index: 1;
-      max-width: 1200px;
+      max-width: 1400px;
       margin: 0 auto;
       padding: 60px 20px;
     }
 
     header {
       text-align: center;
-      margin-bottom: 60px;
+      margin-bottom: 40px;
     }
 
     h1 {
-      font-size: 3rem;
+      font-size: 2.5rem;
       font-weight: 300;
-      letter-spacing: 0.3em;
+      letter-spacing: 0.2em;
       text-transform: uppercase;
       background: linear-gradient(135deg, #c9a227 0%, #8b6914 50%, #c9a227 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
-      margin-bottom: 20px;
-      text-shadow: 0 0 40px rgba(201, 162, 39, 0.3);
+      margin-bottom: 15px;
     }
 
     .subtitle {
-      font-size: 1.1rem;
+      font-size: 1rem;
       color: #9080a0;
-      letter-spacing: 0.2em;
+      letter-spacing: 0.15em;
       font-weight: 300;
     }
 
-    .saturn-symbol {
-      font-size: 4rem;
-      margin: 30px 0;
+    .section-title {
+      font-size: 1.3rem;
       color: #c9a227;
-      text-shadow: 0 0 30px rgba(201, 162, 39, 0.5);
+      letter-spacing: 0.1em;
+      margin: 40px 0 20px 0;
+      padding-bottom: 10px;
+      border-bottom: 1px solid rgba(201, 162, 39, 0.2);
     }
 
     .sketches-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-      gap: 40px;
-      margin-top: 40px;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 25px;
+      margin-top: 20px;
     }
 
     .sketch-card {
       background: linear-gradient(145deg, rgba(30, 20, 50, 0.8) 0%, rgba(15, 10, 30, 0.9) 100%);
       border: 1px solid rgba(201, 162, 39, 0.2);
-      border-radius: 15px;
+      border-radius: 12px;
       overflow: hidden;
-      transition: all 0.4s ease;
+      transition: all 0.3s ease;
       position: relative;
     }
 
@@ -104,7 +105,7 @@
       left: 0;
       right: 0;
       bottom: 0;
-      border-radius: 15px;
+      border-radius: 12px;
       padding: 1px;
       background: linear-gradient(135deg, rgba(201, 162, 39, 0.3), transparent, rgba(138, 43, 226, 0.3));
       -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
@@ -114,80 +115,67 @@
     }
 
     .sketch-card:hover {
-      transform: translateY(-10px);
-      box-shadow: 0 20px 60px rgba(138, 43, 226, 0.3), 0 0 40px rgba(201, 162, 39, 0.2);
+      transform: translateY(-5px);
+      box-shadow: 0 15px 40px rgba(138, 43, 226, 0.3), 0 0 30px rgba(201, 162, 39, 0.15);
     }
 
     .sketch-preview {
-      height: 200px;
+      height: 120px;
       background: linear-gradient(135deg, #1a0a2e 0%, #2d1b4e 100%);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 4rem;
+      font-size: 2.5rem;
       position: relative;
       overflow: hidden;
     }
 
-    .sketch-preview::after {
-      content: '';
-      position: absolute;
-      width: 150%;
-      height: 150%;
-      background: radial-gradient(circle, rgba(138, 43, 226, 0.1) 0%, transparent 70%);
-      animation: pulse 4s ease-in-out infinite;
-    }
-
-    @keyframes pulse {
-      0%, 100% { transform: scale(1); opacity: 0.5; }
-      50% { transform: scale(1.1); opacity: 0.8; }
-    }
-
     .sketch-info {
-      padding: 25px;
+      padding: 18px;
     }
 
     .sketch-title {
-      font-size: 1.4rem;
+      font-size: 1.1rem;
       font-weight: 400;
-      margin-bottom: 10px;
+      margin-bottom: 8px;
       color: #c9a227;
-      letter-spacing: 0.1em;
+      letter-spacing: 0.05em;
     }
 
     .sketch-description {
-      font-size: 0.95rem;
+      font-size: 0.85rem;
       color: #9080a0;
-      line-height: 1.6;
-      margin-bottom: 20px;
+      line-height: 1.5;
+      margin-bottom: 15px;
+      height: 60px;
+      overflow: hidden;
     }
 
     .sketch-link {
       display: inline-block;
-      padding: 12px 30px;
+      padding: 8px 20px;
       background: linear-gradient(135deg, rgba(201, 162, 39, 0.2) 0%, rgba(138, 43, 226, 0.2) 100%);
       border: 1px solid rgba(201, 162, 39, 0.4);
-      border-radius: 25px;
+      border-radius: 20px;
       color: #c9a227;
       text-decoration: none;
-      font-size: 0.9rem;
-      letter-spacing: 0.15em;
+      font-size: 0.8rem;
+      letter-spacing: 0.1em;
       text-transform: uppercase;
       transition: all 0.3s ease;
     }
 
     .sketch-link:hover {
       background: linear-gradient(135deg, rgba(201, 162, 39, 0.4) 0%, rgba(138, 43, 226, 0.4) 100%);
-      box-shadow: 0 0 30px rgba(201, 162, 39, 0.3);
-      transform: scale(1.05);
+      box-shadow: 0 0 20px rgba(201, 162, 39, 0.3);
     }
 
     footer {
       text-align: center;
-      margin-top: 80px;
-      padding: 30px;
+      margin-top: 60px;
+      padding: 25px;
       color: #605070;
-      font-size: 0.9rem;
+      font-size: 0.85rem;
       border-top: 1px solid rgba(201, 162, 39, 0.1);
     }
 
@@ -198,37 +186,37 @@
     }
 
     .occult-border.top-left {
-      top: 20px;
-      left: 20px;
-      width: 60px;
-      height: 60px;
+      top: 15px;
+      left: 15px;
+      width: 40px;
+      height: 40px;
       border-left: 2px solid rgba(201, 162, 39, 0.3);
       border-top: 2px solid rgba(201, 162, 39, 0.3);
     }
 
     .occult-border.top-right {
-      top: 20px;
-      right: 20px;
-      width: 60px;
-      height: 60px;
+      top: 15px;
+      right: 15px;
+      width: 40px;
+      height: 40px;
       border-right: 2px solid rgba(201, 162, 39, 0.3);
       border-top: 2px solid rgba(201, 162, 39, 0.3);
     }
 
     .occult-border.bottom-left {
-      bottom: 20px;
-      left: 20px;
-      width: 60px;
-      height: 60px;
+      bottom: 15px;
+      left: 15px;
+      width: 40px;
+      height: 40px;
       border-left: 2px solid rgba(201, 162, 39, 0.3);
       border-bottom: 2px solid rgba(201, 162, 39, 0.3);
     }
 
     .occult-border.bottom-right {
-      bottom: 20px;
-      right: 20px;
-      width: 60px;
-      height: 60px;
+      bottom: 15px;
+      right: 15px;
+      width: 40px;
+      height: 40px;
       border-right: 2px solid rgba(201, 162, 39, 0.3);
       border-bottom: 2px solid rgba(201, 162, 39, 0.3);
     }
@@ -244,21 +232,205 @@
 
   <div class="container">
     <header>
-      <h1>Saturn & Witchcraft</h1>
-      <p class="subtitle">Cosmic Visualizations & Occult Mysteries</p>
-      <div class="saturn-symbol">&#x2644;</div>
+      <h1>Mathematical Visualizations</h1>
+      <p class="subtitle">Fractals, Attractors & Complex Functions</p>
     </header>
 
+    <!-- Fractals Section -->
+    <h2 class="section-title">Fractals</h2>
+    <div class="sketches-grid">
+      <div class="sketch-card">
+        <div class="sketch-preview">🔥</div>
+        <div class="sketch-info">
+          <h3 class="sketch-title">Burning Ship</h3>
+          <p class="sketch-description">Like Mandelbrot but uses absolute values before squaring, creating an eerie shipwreck silhouette.</p>
+          <a href="sketches/burning-ship/index.html" class="sketch-link">Enter</a>
+        </div>
+      </div>
+
+      <div class="sketch-card">
+        <div class="sketch-preview">🌀</div>
+        <div class="sketch-info">
+          <h3 class="sketch-title">Newton Fractal</h3>
+          <p class="sketch-description">Basins of attraction from Newton-Raphson root finding. Psychedelic interference at boundaries.</p>
+          <a href="sketches/newton-fractal/index.html" class="sketch-link">Enter</a>
+        </div>
+      </div>
+
+      <div class="sketch-card">
+        <div class="sketch-preview">🦎</div>
+        <div class="sketch-info">
+          <h3 class="sketch-title">Lyapunov Fractal</h3>
+          <p class="sketch-description">Visualizes stability in logistic maps. Creates organic, lichen-like textures.</p>
+          <a href="sketches/lyapunov/index.html" class="sketch-link">Enter</a>
+        </div>
+      </div>
+
+      <div class="sketch-card">
+        <div class="sketch-preview">⭕</div>
+        <div class="sketch-info">
+          <h3 class="sketch-title">Apollonian Gasket</h3>
+          <p class="sketch-description">Recursive circle packing using Descartes' Circle Theorem. Deeply connected to hyperbolic geometry.</p>
+          <a href="sketches/apollonian-gasket/index.html" class="sketch-link">Enter</a>
+        </div>
+      </div>
+
+      <div class="sketch-card">
+        <div class="sketch-preview">🧘</div>
+        <div class="sketch-info">
+          <h3 class="sketch-title">Buddhabrot</h3>
+          <p class="sketch-description">Mandelbrot rendered by tracing escape trajectories. A meditating figure emerges from chaos.</p>
+          <a href="sketches/buddhabrot/index.html" class="sketch-link">Enter</a>
+        </div>
+      </div>
+
+      <div class="sketch-card">
+        <div class="sketch-preview">💎</div>
+        <div class="sketch-info">
+          <h3 class="sketch-title">Kleinian Limit Sets</h3>
+          <p class="sketch-description">"Indra's Pearls" - infinitely nested circles from Möbius transformations.</p>
+          <a href="sketches/kleinian/index.html" class="sketch-link">Enter</a>
+        </div>
+      </div>
+
+      <div class="sketch-card">
+        <div class="sketch-preview">🌿</div>
+        <div class="sketch-info">
+          <h3 class="sketch-title">Rauzy Fractal</h3>
+          <p class="sketch-description">From Tribonacci substitution sequences. A fractal that tiles the plane non-periodically.</p>
+          <a href="sketches/rauzy/index.html" class="sketch-link">Enter</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Strange Attractors Section -->
+    <h2 class="section-title">Strange Attractors</h2>
+    <div class="sketches-grid">
+      <div class="sketch-card">
+        <div class="sketch-preview">🌊</div>
+        <div class="sketch-info">
+          <h3 class="sketch-title">Clifford Attractor</h3>
+          <p class="sketch-description">Trigonometric chaos: sin(ay) + c·cos(ax). Creates flowing, fabric-like structures.</p>
+          <a href="sketches/clifford-attractor/index.html" class="sketch-link">Enter</a>
+        </div>
+      </div>
+
+      <div class="sketch-card">
+        <div class="sketch-preview">🎭</div>
+        <div class="sketch-info">
+          <h3 class="sketch-title">De Jong Attractor</h3>
+          <p class="sketch-description">Peter de Jong's parametric attractor. Highly parameter-sensitive patterns.</p>
+          <a href="sketches/dejong-attractor/index.html" class="sketch-link">Enter</a>
+        </div>
+      </div>
+
+      <div class="sketch-card">
+        <div class="sketch-preview">🌌</div>
+        <div class="sketch-info">
+          <h3 class="sketch-title">Ikeda Map</h3>
+          <p class="sketch-description">From laser physics - models light in a ring cavity. Creates spiraling, galaxy-like forms.</p>
+          <a href="sketches/ikeda-map/index.html" class="sketch-link">Enter</a>
+        </div>
+      </div>
+
+      <div class="sketch-card">
+        <div class="sketch-preview">🦘</div>
+        <div class="sketch-info">
+          <h3 class="sketch-title">Hopalong Attractor</h3>
+          <p class="sketch-description">Martin's attractor - surprisingly symmetric despite its chaotic nature.</p>
+          <a href="sketches/hopalong/index.html" class="sketch-link">Enter</a>
+        </div>
+      </div>
+
+      <div class="sketch-card">
+        <div class="sketch-preview">🔮</div>
+        <div class="sketch-info">
+          <h3 class="sketch-title">Mira Fractal</h3>
+          <p class="sketch-description">Quadratic recurrence creating organic, cellular shapes.</p>
+          <a href="sketches/mira/index.html" class="sketch-link">Enter</a>
+        </div>
+      </div>
+
+      <div class="sketch-card">
+        <div class="sketch-preview">🍿</div>
+        <div class="sketch-info">
+          <h3 class="sketch-title">Popcorn / Pickover</h3>
+          <p class="sketch-description">Trigonometric with tangent singularities. Creates web-like density patterns.</p>
+          <a href="sketches/popcorn/index.html" class="sketch-link">Enter</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Physics & Dynamics Section -->
+    <h2 class="section-title">Physics & Dynamics</h2>
+    <div class="sketches-grid">
+      <div class="sketch-card">
+        <div class="sketch-preview">🧲</div>
+        <div class="sketch-info">
+          <h3 class="sketch-title">Magnetic Pendulum</h3>
+          <p class="sketch-description">Three magnets pulling a pendulum. Initial conditions create fractal basin boundaries.</p>
+          <a href="sketches/magnetic-pendulum/index.html" class="sketch-link">Enter</a>
+        </div>
+      </div>
+
+      <div class="sketch-card">
+        <div class="sketch-preview">🦋</div>
+        <div class="sketch-info">
+          <h3 class="sketch-title">Hofstadter Butterfly</h3>
+          <p class="sketch-description">Energy spectrum of Bloch electrons in magnetic field. Fractal structure in quantum mechanics.</p>
+          <a href="sketches/hofstadter-butterfly/index.html" class="sketch-link">Enter</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mathematical Functions Section -->
+    <h2 class="section-title">Mathematical Functions</h2>
+    <div class="sketches-grid">
+      <div class="sketch-card">
+        <div class="sketch-preview">📈</div>
+        <div class="sketch-info">
+          <h3 class="sketch-title">Weierstrass Function</h3>
+          <p class="sketch-description">Continuous everywhere, differentiable nowhere. Infinitely jagged coastlines.</p>
+          <a href="sketches/weierstrass/index.html" class="sketch-link">Enter</a>
+        </div>
+      </div>
+
+      <div class="sketch-card">
+        <div class="sketch-preview">🎨</div>
+        <div class="sketch-info">
+          <h3 class="sketch-title">Domain Coloring</h3>
+          <p class="sketch-description">Visualize complex functions. Phase portraits reveal poles, zeros, and branch cuts.</p>
+          <a href="sketches/domain-coloring/index.html" class="sketch-link">Enter</a>
+        </div>
+      </div>
+
+      <div class="sketch-card">
+        <div class="sketch-preview">🔷</div>
+        <div class="sketch-info">
+          <h3 class="sketch-title">Schwarz-Christoffel</h3>
+          <p class="sketch-description">Conformal maps transforming disk to polygons. Watch circles become squares smoothly.</p>
+          <a href="sketches/schwarz-christoffel/index.html" class="sketch-link">Enter</a>
+        </div>
+      </div>
+
+      <div class="sketch-card">
+        <div class="sketch-preview">🔄</div>
+        <div class="sketch-info">
+          <h3 class="sketch-title">Droste Effect</h3>
+          <p class="sketch-description">Infinite recursive zoom via complex logarithm. Self-similar spiral patterns.</p>
+          <a href="sketches/droste/index.html" class="sketch-link">Enter</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Original Collection Section -->
+    <h2 class="section-title">Saturn & Witchcraft Collection</h2>
     <div class="sketches-grid">
       <div class="sketch-card">
         <div class="sketch-preview">&#x2644;</div>
         <div class="sketch-info">
-          <h2 class="sketch-title">Saturn</h2>
-          <p class="sketch-description">
-            A mesmerizing cosmic visualization of Saturn with its iconic rings,
-            orbiting moons, and twinkling stars. Watch the gas giant rotate
-            majestically in the void of space.
-          </p>
+          <h3 class="sketch-title">Saturn</h3>
+          <p class="sketch-description">A mesmerizing cosmic visualization of Saturn with its iconic rings and orbiting moons.</p>
           <a href="sketches/saturn/index.html" class="sketch-link">Enter</a>
         </div>
       </div>
@@ -266,11 +438,8 @@
       <div class="sketch-card">
         <div class="sketch-preview">&#x26E7;</div>
         <div class="sketch-info">
-          <h2 class="sketch-title">Sigil</h2>
-          <p class="sketch-description">
-            A mystical pentagram surrounded by ancient runes, flickering candles,
-            and swirling magical energy. Click to conjure bursts of ethereal particles.
-          </p>
+          <h3 class="sketch-title">Sigil</h3>
+          <p class="sketch-description">A mystical pentagram surrounded by ancient runes and flickering candles.</p>
           <a href="sketches/sigil/index.html" class="sketch-link">Enter</a>
         </div>
       </div>
@@ -278,19 +447,15 @@
       <div class="sketch-card">
         <div class="sketch-preview">&#x2721;</div>
         <div class="sketch-info">
-          <h2 class="sketch-title">Saturn Occult</h2>
-          <p class="sketch-description">
-            The fusion of cosmic and occult - Saturn as an ancient deity,
-            surrounded by hexagrams, alchemical symbols, and dark energy vortexes.
-            A portal to hidden cosmic knowledge.
-          </p>
+          <h3 class="sketch-title">Saturn Occult</h3>
+          <p class="sketch-description">The fusion of cosmic and occult - Saturn as an ancient deity with alchemical symbols.</p>
           <a href="sketches/saturn-occult/index.html" class="sketch-link">Enter</a>
         </div>
       </div>
     </div>
 
     <footer>
-      <p>Created with p5.js</p>
+      <p>Created with p5.js | Mathematical beauty through code</p>
     </footer>
   </div>
 
