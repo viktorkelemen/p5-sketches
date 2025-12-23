@@ -68,11 +68,13 @@ const fragShader = `
     float newLogR = logR + logZoom;
     float newTheta = theta + u_spiralAngle * logR + u_time * 0.5;
 
-    // Wrap logR to create repetition
-    float period = TWO_PI / abs(u_spiralAngle);
+    // Wrap logR to create repetition (guard against division by zero)
+    float safeSpiralAngle = max(abs(u_spiralAngle), 0.001);
+    float period = TWO_PI / safeSpiralAngle;
     newLogR = mod(mod(newLogR, period) + period, period);
 
-    // Convert back to Cartesian
+    // Convert back to Cartesian (clamp to prevent exp overflow)
+    newLogR = clamp(newLogR, -10.0, 10.0);
     float newR = exp(newLogR);
     float branchedTheta = newTheta * u_branches;
     float newX = newR * cos(branchedTheta);
@@ -138,8 +140,8 @@ function draw() {
   drosteShader.setUniform('u_zoomSpeed', zoomSpeed);
   drosteShader.setUniform('u_branches', branches);
 
-  // Draw a quad that fills the screen
-  quad(-1, -1, 1, -1, 1, 1, -1, 1);
+  // Draw a rectangle that fills the screen
+  rect(0, 0, width, height);
 
   time += deltaTime / 1000;
 
@@ -166,7 +168,7 @@ function keyPressed() {
   if (keyCode === UP_ARROW) {
     spiralAngle += 0.02;
   } else if (keyCode === DOWN_ARROW) {
-    spiralAngle -= 0.02;
+    spiralAngle = max(spiralAngle - 0.02, 0.01);
   } else if (keyCode === LEFT_ARROW) {
     zoomSpeed -= 0.1;
   } else if (keyCode === RIGHT_ARROW) {
