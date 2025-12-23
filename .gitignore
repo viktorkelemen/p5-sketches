@@ -14,3 +14,8 @@ Thumbs.db
 # Build output
 dist/
 build/
+
+# Playwright test artifacts
+test-results/
+playwright-report/
+playwright/.cache/
