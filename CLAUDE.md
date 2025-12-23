@@ -54,3 +54,19 @@ Most sketches support:
 - **Click**: Zoom, regenerate, or change parameters
 - **R key**: Reset to default view
 - **Arrow keys**: Adjust parameters (where applicable)
+
+## Development Workflow
+
+After every code change:
+1. **Run tests** if they exist: `npm run docker:test` (runs Playwright E2E tests in Docker)
+2. **Code review** the changes for bugs, performance issues, and style
+
+### Testing
+
+E2E tests use Playwright in Docker:
+```bash
+npm run serve              # Start local server on port 3000
+npm run docker:test        # Run tests in Docker
+```
+
+Test files are in `tests/` directory. Each sketch can have its own `.spec.ts` file.

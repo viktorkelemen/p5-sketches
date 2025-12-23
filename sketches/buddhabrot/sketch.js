@@ -10,9 +10,9 @@ let samplesPerFrame = 10000;
 let maxValDeep = 1, maxValMid = 1, maxValShallow = 1;
 let totalSamples = 0;
 
-// Fixed lower resolution for faster rendering
-const RENDER_WIDTH = 640;
-const RENDER_HEIGHT = 480;
+// Internal resolution (scaled to fullscreen)
+const RENDER_WIDTH = 512;
+const RENDER_HEIGHT = 384;
 
 // Different iteration limits for depth channels (Nebulabrot technique)
 let maxIterDeep = 2000;
@@ -43,10 +43,25 @@ let zoomLevel = 1;
 let centerX = -0.5;
 let centerY = 0;
 
+// Auto-zoom settings
+let minZoom = 1;
+let maxZoom = 24;     // Max zoom level
+let zoomSpeed = 0.001; // Slower zoom increment per frame
+let zoomDirection = 1; // 1 = zooming in, -1 = zooming out
+let autoZoomTarget = { x: -0.75, y: 0.1 }; // Interesting point to zoom into
+
+let renderBuffer;
+
 function setup() {
-  createCanvas(RENDER_WIDTH, RENDER_HEIGHT);
+  createCanvas(windowWidth, windowHeight);
   pixelDensity(1);
+  noSmooth();
   colorMode(RGB, 255);
+
+  // Create low-res offscreen buffer for rendering
+  renderBuffer = createGraphics(RENDER_WIDTH, RENDER_HEIGHT);
+  renderBuffer.pixelDensity(1);
+  renderBuffer.noSmooth();
 
   initBuffers();
   updateViewBounds();
@@ -54,10 +69,10 @@ function setup() {
 }
 
 function initBuffers() {
-  // Initialize accumulation buffers
-  deepChannel = new Float32Array(width * height);
-  midChannel = new Float32Array(width * height);
-  shallowChannel = new Float32Array(width * height);
+  // Initialize accumulation buffers at render resolution
+  deepChannel = new Float32Array(RENDER_WIDTH * RENDER_HEIGHT);
+  midChannel = new Float32Array(RENDER_WIDTH * RENDER_HEIGHT);
+  shallowChannel = new Float32Array(RENDER_WIDTH * RENDER_HEIGHT);
 
   // Pre-allocate trajectory buffers (sized for longest iteration limit)
   maxTrajectoryLen = maxIterDeep;
@@ -119,12 +134,41 @@ function draw() {
     updateDisplay();
   }
 
-  // Show progress
-  fill(255);
-  noStroke();
-  textSize(12);
-  textAlign(LEFT, TOP);
-  text(`Samples: ${totalSamples.toLocaleString()} | Zoom: ${zoomLevel.toFixed(1)}x | Click to zoom in, Shift+click to zoom out, R to reset`, 5, 5);
+  // Auto-zoom: smoothly zoom in/out in a loop
+  if (zoomDirection === 1) {
+    // Zooming in
+    centerX = lerp(centerX, autoZoomTarget.x, zoomSpeed * 2);
+    centerY = lerp(centerY, autoZoomTarget.y, zoomSpeed * 2);
+    zoomLevel *= (1 + zoomSpeed);
+
+    if (zoomLevel >= maxZoom) {
+      zoomDirection = -1; // Start zooming out
+    }
+  } else {
+    // Zooming out
+    centerX = lerp(centerX, -0.5, zoomSpeed * 2);
+    centerY = lerp(centerY, 0, zoomSpeed * 2);
+    zoomLevel *= (1 - zoomSpeed);
+
+    if (zoomLevel <= minZoom) {
+      zoomDirection = 1; // Start zooming in
+      zoomLevel = minZoom;
+    }
+  }
+
+  // Update view bounds
+  updateViewBounds();
+
+  // Clear periodically for fresh render at new zoom level
+  if (frameCount % 60 === 0) {
+    deepChannel.fill(0);
+    midChannel.fill(0);
+    shallowChannel.fill(0);
+    maxValDeep = 1;
+    maxValMid = 1;
+    maxValShallow = 1;
+  }
+
 }
 
 // Check if point is in main cardioid or period-2 bulb
@@ -156,19 +200,19 @@ function traceOrbitOptimized(cRe, cIm, maxIter, channel, channelId) {
         let im = trajectoryIm[j];
 
         // Original point
-        let px = floor(map(re, minX, maxX, 0, width));
-        let py = floor(map(im, minY, maxY, 0, height));
+        let px = floor(map(re, minX, maxX, 0, RENDER_WIDTH));
+        let py = floor(map(im, minY, maxY, 0, RENDER_HEIGHT));
 
-        if (px >= 0 && px < width && py >= 0 && py < height) {
-          let idx = px + py * width;
+        if (px >= 0 && px < RENDER_WIDTH && py >= 0 && py < RENDER_HEIGHT) {
+          let idx = px + py * RENDER_WIDTH;
           channel[idx]++;
           if (channel[idx] > maxVal) maxVal = channel[idx];
         }
 
         // Mirrored point (negative imaginary part)
-        let pyMirror = floor(map(-im, minY, maxY, 0, height));
-        if (px >= 0 && px < width && pyMirror >= 0 && pyMirror < height) {
-          let idx = px + pyMirror * width;
+        let pyMirror = floor(map(-im, minY, maxY, 0, RENDER_HEIGHT));
+        if (px >= 0 && px < RENDER_WIDTH && pyMirror >= 0 && pyMirror < RENDER_HEIGHT) {
+          let idx = px + pyMirror * RENDER_WIDTH;
           channel[idx]++;
           if (channel[idx] > maxVal) maxVal = channel[idx];
         }
@@ -195,13 +239,13 @@ function traceOrbitOptimized(cRe, cIm, maxIter, channel, channelId) {
 }
 
 function updateDisplay() {
-  loadPixels();
+  renderBuffer.loadPixels();
 
   let logMaxDeep = log(maxValDeep + 1);
   let logMaxMid = log(maxValMid + 1);
   let logMaxShallow = log(maxValShallow + 1);
 
-  for (let i = 0; i < width * height; i++) {
+  for (let i = 0; i < RENDER_WIDTH * RENDER_HEIGHT; i++) {
     // Normalize each channel to 0-1 range with logarithmic scaling
     let dVal = log(deepChannel[i] + 1) / logMaxDeep;
     let mVal = log(midChannel[i] + 1) / logMaxMid;
@@ -239,32 +283,16 @@ function updateDisplay() {
     b = lerp(b, colorHighlight.b, highlightBlend);
 
     let idx = i * 4;
-    pixels[idx] = constrain(r, 0, 255);
-    pixels[idx + 1] = constrain(g, 0, 255);
-    pixels[idx + 2] = constrain(b, 0, 255);
-    pixels[idx + 3] = 255;
+    renderBuffer.pixels[idx] = constrain(r, 0, 255);
+    renderBuffer.pixels[idx + 1] = constrain(g, 0, 255);
+    renderBuffer.pixels[idx + 2] = constrain(b, 0, 255);
+    renderBuffer.pixels[idx + 3] = 255;
   }
 
-  updatePixels();
-}
+  renderBuffer.updatePixels();
 
-function mousePressed() {
-  // Convert mouse position to complex coordinates
-  let clickRe = map(mouseX, 0, width, minX, maxX);
-  let clickIm = map(mouseY, 0, height, minY, maxY);
-
-  if (keyIsPressed && keyCode === SHIFT) {
-    // Zoom out
-    zoomLevel = max(1, zoomLevel / 2);
-  } else {
-    // Zoom in and recenter
-    zoomLevel *= 2;
-    centerX = clickRe;
-    centerY = clickIm;
-  }
-
-  // Reset and recalculate
-  resetView();
+  // Draw scaled to fullscreen
+  image(renderBuffer, 0, 0, width, height);
 }
 
 function resetView() {
@@ -281,14 +309,16 @@ function resetView() {
 
 function keyPressed() {
   if (key === 'r' || key === 'R') {
-    // Full reset
+    // Full reset - restart auto-zoom
     zoomLevel = 1;
+    zoomDirection = 1;
     centerX = -0.5;
     centerY = 0;
+    totalSamples = 0;
     resetView();
   }
 }
 
 function windowResized() {
-  // Keep fixed resolution, don't resize
+  resizeCanvas(windowWidth, windowHeight);
 }

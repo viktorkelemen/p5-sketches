@@ -15,23 +15,25 @@ test.describe('Buddhabrot Sketch', () => {
     });
 
     await page.waitForLoadState('networkidle');
-    const canvas = page.locator('canvas');
+    // Main canvas has p5Canvas class
+    const canvas = page.locator('canvas.p5Canvas');
     await expect(canvas).toBeVisible({ timeout: 5000 });
     expect(consoleErrors).toHaveLength(0);
   });
 
-  test('should have fixed 640x480 resolution', async ({ page }) => {
-    const canvas = page.locator('canvas');
+  test('should be fullscreen', async ({ page }) => {
+    const canvas = page.locator('canvas.p5Canvas');
     await expect(canvas).toBeVisible({ timeout: 5000 });
 
     const canvasBox = await canvas.boundingBox();
+    const viewportSize = page.viewportSize();
     expect(canvasBox).not.toBeNull();
-    expect(canvasBox!.width).toBe(640);
-    expect(canvasBox!.height).toBe(480);
+    expect(canvasBox!.width).toBe(viewportSize!.width);
+    expect(canvasBox!.height).toBe(viewportSize!.height);
   });
 
   test('should render colorful content after sampling', async ({ page }) => {
-    const canvas = page.locator('canvas');
+    const canvas = page.locator('canvas.p5Canvas');
     await expect(canvas).toBeVisible({ timeout: 5000 });
 
     // Let it render for longer to accumulate more samples
@@ -73,34 +75,19 @@ test.describe('Buddhabrot Sketch', () => {
     expect(colorAnalysis!.colorfulPixels).toBeGreaterThan(500);
   });
 
-  test('should zoom in on click', async ({ page }) => {
-    const canvas = page.locator('canvas');
+  test('should auto-zoom over time', async ({ page }) => {
+    const canvas = page.locator('canvas.p5Canvas');
     await expect(canvas).toBeVisible({ timeout: 5000 });
 
-    // Let initial render happen
-    await page.waitForTimeout(2000);
+    // Let auto-zoom run for a bit
+    await page.waitForTimeout(3000);
 
-    // Get initial zoom level from text
-    const initialText = await page.locator('canvas').evaluate((c) => {
-      const ctx = (c as HTMLCanvasElement).getContext('2d');
-      return ctx ? 'has context' : 'no context';
-    });
-
-    // Click to zoom
-    await canvas.click({ position: { x: 320, y: 240 } });
-
-    // Wait for re-render
-    await page.waitForTimeout(2000);
-
-    // The display should show new zoom level
-    // We verify by checking sample count reset (should be lower after zoom)
+    // Verify canvas is still rendering
     const hasRendered = await page.evaluate(() => {
-      const canvas = document.querySelector('canvas');
+      const canvas = document.querySelector('canvas.p5Canvas');
       if (!canvas) return false;
       const ctx = canvas.getContext('2d');
       if (!ctx) return false;
-
-      // Just verify canvas still works after zoom
       const imageData = ctx.getImageData(0, 0, 10, 10);
       return imageData.data.length > 0;
     });
@@ -109,33 +96,14 @@ test.describe('Buddhabrot Sketch', () => {
   });
 
   test('should capture screenshot after extended rendering', async ({ page }) => {
-    const canvas = page.locator('canvas');
+    const canvas = page.locator('canvas.p5Canvas');
     await expect(canvas).toBeVisible({ timeout: 5000 });
 
-    // Let it render for 8 seconds to get good color accumulation
+    // Let it render and auto-zoom for 8 seconds
     await page.waitForTimeout(8000);
 
     await page.screenshot({
-      path: 'test-results/buddhabrot-colorful.png',
-      fullPage: true
-    });
-  });
-
-  test('should capture zoomed screenshot', async ({ page }) => {
-    const canvas = page.locator('canvas');
-    await expect(canvas).toBeVisible({ timeout: 5000 });
-
-    // Initial render
-    await page.waitForTimeout(3000);
-
-    // Zoom into interesting area (around the main bulb)
-    await canvas.click({ position: { x: 400, y: 240 } });
-
-    // Let zoomed view render
-    await page.waitForTimeout(5000);
-
-    await page.screenshot({
-      path: 'test-results/buddhabrot-zoomed.png',
+      path: 'test-results/buddhabrot-autozoom.png',
       fullPage: true
     });
   });
