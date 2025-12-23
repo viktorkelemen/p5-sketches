@@ -1,0 +1,56 @@
+# E2E Testing Docker Compose Configuration
+# Usage: docker compose -f docker-compose.e2e.yml run --rm e2e
+
+services:
+  e2e:
+    build:
+      context: .
+      dockerfile: Dockerfile.e2e
+
+    # CRITICAL: Chromium needs >64MB shared memory to avoid crashes
+    shm_size: "2gb"
+
+    volumes:
+      # Mount source for live code changes without rebuild
+      - .:/app:cached
+      # Preserve container's node_modules (prevents host override)
+      - /app/node_modules
+      # Persist test artifacts for debugging
+      - ./playwright-report:/app/playwright-report
+      - ./test-results:/app/test-results
+
+    environment:
+      # Enable CI mode (headless, no interactive prompts)
+      - CI=true
+      # Skip browser download (use image's pre-installed browsers)
+      - PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
+
+    # Run as non-root user (pwuser is created by Playwright image)
+    user: pwuser
+
+  # Headed debugging service with VNC access
+  e2e-debug:
+    build:
+      context: .
+      dockerfile: Dockerfile.e2e
+    shm_size: "2gb"
+    volumes:
+      - .:/app:cached
+      - /app/node_modules
+      - ./playwright-report:/app/playwright-report
+      - ./test-results:/app/test-results
+    environment:
+      - DISPLAY=:99
+      - PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
+    ports:
+      # VNC: connect to localhost:5900 with any VNC client
+      - "5900:5900"
+    user: pwuser
+    command: >
+      bash -c "
+        Xvfb :99 -screen 0 1920x1080x24 &
+        sleep 1
+        x11vnc -display :99 -forever -nopw -shared -rfbport 5900 &
+        sleep 1
+        npx playwright test --headed
+      "

@@ -1,0 +1,28 @@
+# E2E Testing Dockerfile using official Playwright image
+# Includes Chromium, Firefox, and WebKit pre-installed
+FROM mcr.microsoft.com/playwright:v1.57.0-jammy
+
+# Install VNC for headed debugging (as root)
+USER root
+RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+    x11vnc \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# Copy package files first for better layer caching
+COPY --chown=pwuser:pwuser package*.json ./
+
+# Install dependencies
+# --ignore-scripts prevents Playwright from re-downloading browsers (already in image)
+RUN npm ci --ignore-scripts
+
+# Copy source code (overridden by volume mount in development)
+COPY --chown=pwuser:pwuser . .
+
+# Switch to non-root user
+USER pwuser
+
+# Default command: run all Playwright tests
+CMD ["npx", "playwright", "test"]
