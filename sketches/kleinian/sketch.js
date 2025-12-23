@@ -2,7 +2,7 @@
 // "Indra's Pearls" - infinitely nested circles from Möbius transformations
 
 let points = [];
-let maxPoints = 100000;
+let maxPoints = 50000;
 let depth = 50;
 let time = 0;
 
@@ -20,34 +20,52 @@ function generateLimitSet() {
 
   // Parameters for the group generators
   // ta and tb are traces of the Möbius transformations
-  let t = map(sin(time * 0.5), -1, 1, 1.95, 2.05);
-  ta = createComplex(t, 0);
-  tb = createComplex(t, 0);
+  // Use complex traces to avoid the singularity at real trace = 2
+  // These parameters produce the classic "Indra's Pearls" limit sets
+  let angle = time * 0.1;
+  ta = createComplex(1.91, 0.05 + 0.02 * sin(angle));
+  tb = createComplex(1.91, 0.05 + 0.02 * cos(angle));
 
   // Generate transformations a, b, A (a inverse), B (b inverse)
   let transforms = generateTransforms(ta, tb);
 
-  // Start from a seed point and apply random walks
+  // Find a fixed point of generator b to start from
+  // Fixed point of Möbius (az+b)/(cz+d) satisfies cz² + (d-a)z - b = 0
+  let b = transforms[1];
+  let fixedPoint = findFixedPoint(b);
+
+  if (!isFinite(fixedPoint.re) || !isFinite(fixedPoint.im)) {
+    console.log("Invalid fixed point, using origin");
+    fixedPoint = createComplex(0, 0);
+  }
+
+  // Start from fixed point and apply random walks (chaos game)
+  let z = fixedPoint;
+
+  // Burn-in: iterate without recording to get onto the limit set
+  for (let i = 0; i < 100; i++) {
+    let choice = floor(random(4));
+    z = applyMobius(transforms[choice], z);
+    if (!isFinite(z.re) || !isFinite(z.im) || complexMag(z) > 100) {
+      z = fixedPoint; // Reset if escaped
+    }
+  }
+
+  // Now collect points
   for (let i = 0; i < maxPoints; i++) {
-    // Start near the limit set
-    let z = createComplex(random(-0.1, 0.1), random(-0.1, 0.1));
+    let choice = floor(random(4));
+    z = applyMobius(transforms[choice], z);
 
-    // Random walk through the group
-    for (let j = 0; j < depth; j++) {
-      let choice = floor(random(4));
-      z = applyMobius(transforms[choice], z);
-
-      // Bail out if point escapes
-      if (complexMag(z) > 10) break;
+    if (!isFinite(z.re) || !isFinite(z.im) || complexMag(z) > 100) {
+      z = fixedPoint; // Reset if escaped
+      continue;
     }
 
-    if (complexMag(z) < 10) {
-      points.push({
-        x: z.re,
-        y: z.im,
-        hue: (i / maxPoints) * 360
-      });
-    }
+    points.push({
+      x: z.re,
+      y: z.im,
+      hue: (i / maxPoints) * 360
+    });
   }
 }
 
@@ -93,6 +111,27 @@ function complexSqrt(z) {
     sqrt(r) * cos(theta / 2),
     sqrt(r) * sin(theta / 2)
   );
+}
+
+// Find fixed point of Möbius transformation (az+b)/(cz+d)
+// Solves cz² + (d-a)z - b = 0 using quadratic formula
+function findFixedPoint(m) {
+  // If c ≈ 0, fixed point is b/(a-d)
+  if (complexMag(m.c) < 1e-10) {
+    return complexDiv(m.b, complexSub(m.a, m.d));
+  }
+
+  // Quadratic: cz² + (d-a)z - b = 0
+  // z = (-(d-a) ± sqrt((d-a)² + 4cb)) / 2c
+  let dma = complexSub(m.d, m.a);
+  let discriminant = complexAdd(
+    complexMult(dma, dma),
+    complexMult(createComplex(4, 0), complexMult(m.c, m.b))
+  );
+  let sqrtDisc = complexSqrt(discriminant);
+  let numerator = complexSub(complexMult(createComplex(-1, 0), dma), sqrtDisc);
+  let denominator = complexMult(createComplex(2, 0), m.c);
+  return complexDiv(numerator, denominator);
 }
 
 function generateTransforms(ta, tb) {
@@ -163,9 +202,9 @@ function applyMobius(m, z) {
 }
 
 function draw() {
-  background(240, 20, 5);
+  background(240, 30, 15);
 
-  let scale = min(width, height) * 0.3;
+  let scale = min(width, height) * 0.4;
 
   translate(width / 2, height / 2);
 
