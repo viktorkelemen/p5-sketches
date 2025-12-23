@@ -95,8 +95,10 @@ function draw() {
   for (let i = 0; i < samplesPerFrame; i++) {
     // Random point in complex plane (sample from current view bounds)
     // Only sample upper half (Im >= 0) due to vertical symmetry
+    // Use max of absolute bounds to ensure coverage when zoomed below Y=0
     let cRe = random(minX, maxX);
-    let cIm = random(0, max(maxY, abs(minY)));
+    let positiveMaxIm = max(abs(minY), abs(maxY));
+    let cIm = random(0, positiveMaxIm);
 
     // Skip points likely in the Mandelbrot set (cardioid and period-2 bulb)
     if (isInMainCardioidOrBulb(cRe, cIm)) {
@@ -179,9 +181,12 @@ function traceOrbitOptimized(cRe, cIm, maxIter, channel, channelId) {
       return;
     }
 
-    trajectoryRe[trajectoryLen] = zRe;
-    trajectoryIm[trajectoryLen] = zIm;
-    trajectoryLen++;
+    // Store point with bounds check for safety
+    if (trajectoryLen < maxTrajectoryLen) {
+      trajectoryRe[trajectoryLen] = zRe;
+      trajectoryIm[trajectoryLen] = zIm;
+      trajectoryLen++;
+    }
 
     let newRe = zRe2 - zIm2 + cRe;
     zIm = 2 * zRe * zIm + cIm;
