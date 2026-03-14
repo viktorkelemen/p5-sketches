@@ -73,9 +73,26 @@
       border: 1px solid var(--border);
     }
 
+    .sketch-thumb {
+      width: 100%;
+      height: 160px;
+      object-fit: cover;
+      display: block;
+      border-bottom: 1px solid var(--border);
+      transition: opacity 0.2s;
+    }
+
+    .sketch-card:hover .sketch-thumb {
+      opacity: 0.85;
+    }
+
+    .sketch-info {
+      padding: 20px 24px 24px;
+    }
+
     .sketch-card {
       background: var(--card-bg);
-      padding: 24px;
+      padding: 0;
       transition: background 0.2s;
     }
 
@@ -155,120 +172,180 @@
     <h2 class="section-title">Fractals</h2>
     <div class="sketches-grid">
       <div class="sketch-card">
+        <a href="sketches/burning-ship/index.html"><img class="sketch-thumb" src="thumbnails/burning-ship.png" alt="burning-ship" loading="lazy"></a>
+        <div class="sketch-info">
         <h3 class="sketch-title"><a href="sketches/burning-ship/index.html">Burning Ship</a></h3>
         <p class="sketch-description">Mandelbrot variant using absolute values. Creates an eerie shipwreck silhouette.</p>
         <a href="sketches/burning-ship/index.html" class="sketch-link">View →</a>
       </div>
+      </div>
       <div class="sketch-card">
+        <a href="sketches/newton-fractal/index.html"><img class="sketch-thumb" src="thumbnails/newton-fractal.png" alt="newton-fractal" loading="lazy"></a>
+        <div class="sketch-info">
         <h3 class="sketch-title"><a href="sketches/newton-fractal/index.html">Newton Fractal</a></h3>
         <p class="sketch-description">Basins of attraction from Newton-Raphson root finding on z³ − 1.</p>
         <a href="sketches/newton-fractal/index.html" class="sketch-link">View →</a>
       </div>
+      </div>
       <div class="sketch-card">
+        <a href="sketches/lyapunov/index.html"><img class="sketch-thumb" src="thumbnails/lyapunov.png" alt="lyapunov" loading="lazy"></a>
+        <div class="sketch-info">
         <h3 class="sketch-title"><a href="sketches/lyapunov/index.html">Lyapunov Fractal</a></h3>
         <p class="sketch-description">Stability in logistic maps. Organic, lichen-like textures.</p>
         <a href="sketches/lyapunov/index.html" class="sketch-link">View →</a>
       </div>
+      </div>
       <div class="sketch-card">
+        <a href="sketches/apollonian-gasket/index.html"><img class="sketch-thumb" src="thumbnails/apollonian-gasket.png" alt="apollonian-gasket" loading="lazy"></a>
+        <div class="sketch-info">
         <h3 class="sketch-title"><a href="sketches/apollonian-gasket/index.html">Apollonian Gasket</a></h3>
         <p class="sketch-description">Recursive circle packing via Descartes' Circle Theorem.</p>
         <a href="sketches/apollonian-gasket/index.html" class="sketch-link">View →</a>
       </div>
+      </div>
       <div class="sketch-card">
+        <a href="sketches/buddhabrot/index.html"><img class="sketch-thumb" src="thumbnails/buddhabrot.png" alt="buddhabrot" loading="lazy"></a>
+        <div class="sketch-info">
         <h3 class="sketch-title"><a href="sketches/buddhabrot/index.html">Buddhabrot</a></h3>
         <p class="sketch-description">Mandelbrot rendered by tracing escape trajectories. Nebulabrot technique for RGB.</p>
         <a href="sketches/buddhabrot/index.html" class="sketch-link">View →</a>
       </div>
+      </div>
       <div class="sketch-card">
+        <a href="sketches/kleinian/index.html"><img class="sketch-thumb" src="thumbnails/kleinian.png" alt="kleinian" loading="lazy"></a>
+        <div class="sketch-info">
         <h3 class="sketch-title"><a href="sketches/kleinian/index.html">Kleinian Limit Sets</a></h3>
         <p class="sketch-description">Indra's Pearls — infinitely nested circles from Möbius transformations.</p>
         <a href="sketches/kleinian/index.html" class="sketch-link">View →</a>
       </div>
+      </div>
       <div class="sketch-card">
+        <a href="sketches/rauzy/index.html"><img class="sketch-thumb" src="thumbnails/rauzy.png" alt="rauzy" loading="lazy"></a>
+        <div class="sketch-info">
         <h3 class="sketch-title"><a href="sketches/rauzy/index.html">Rauzy Fractal</a></h3>
         <p class="sketch-description">Tribonacci substitution sequences. Non-periodic plane tiling related to quasicrystals.</p>
         <a href="sketches/rauzy/index.html" class="sketch-link">View →</a>
+      </div>
       </div>
     </div>
 
     <h2 class="section-title">Strange Attractors</h2>
     <div class="sketches-grid">
       <div class="sketch-card">
+        <a href="sketches/clifford-attractor/index.html"><img class="sketch-thumb" src="thumbnails/clifford-attractor.png" alt="clifford-attractor" loading="lazy"></a>
+        <div class="sketch-info">
         <h3 class="sketch-title"><a href="sketches/clifford-attractor/index.html">Clifford Attractor</a></h3>
         <p class="sketch-description">sin(ay) + c·cos(ax). Flowing, fabric-like structures.</p>
         <a href="sketches/clifford-attractor/index.html" class="sketch-link">View →</a>
       </div>
+      </div>
       <div class="sketch-card">
+        <a href="sketches/dejong-attractor/index.html"><img class="sketch-thumb" src="thumbnails/dejong-attractor.png" alt="dejong-attractor" loading="lazy"></a>
+        <div class="sketch-info">
         <h3 class="sketch-title"><a href="sketches/dejong-attractor/index.html">De Jong Attractor</a></h3>
         <p class="sketch-description">Peter de Jong's parametric attractor with beautiful preset parameters.</p>
         <a href="sketches/dejong-attractor/index.html" class="sketch-link">View →</a>
       </div>
+      </div>
       <div class="sketch-card">
+        <a href="sketches/ikeda-map/index.html"><img class="sketch-thumb" src="thumbnails/ikeda-map.png" alt="ikeda-map" loading="lazy"></a>
+        <div class="sketch-info">
         <h3 class="sketch-title"><a href="sketches/ikeda-map/index.html">Ikeda Map</a></h3>
         <p class="sketch-description">From laser physics — light in a ring cavity. Spiraling, galaxy-like forms.</p>
         <a href="sketches/ikeda-map/index.html" class="sketch-link">View →</a>
       </div>
+      </div>
       <div class="sketch-card">
+        <a href="sketches/hopalong/index.html"><img class="sketch-thumb" src="thumbnails/hopalong.png" alt="hopalong" loading="lazy"></a>
+        <div class="sketch-info">
         <h3 class="sketch-title"><a href="sketches/hopalong/index.html">Hopalong</a></h3>
         <p class="sketch-description">Martin's attractor — surprisingly symmetric despite chaotic nature.</p>
         <a href="sketches/hopalong/index.html" class="sketch-link">View →</a>
       </div>
+      </div>
       <div class="sketch-card">
+        <a href="sketches/mira/index.html"><img class="sketch-thumb" src="thumbnails/mira.png" alt="mira" loading="lazy"></a>
+        <div class="sketch-info">
         <h3 class="sketch-title"><a href="sketches/mira/index.html">Mira</a></h3>
         <p class="sketch-description">Gumowski-Mira quadratic recurrence. Organic, cellular shapes.</p>
         <a href="sketches/mira/index.html" class="sketch-link">View →</a>
       </div>
+      </div>
       <div class="sketch-card">
+        <a href="sketches/popcorn/index.html"><img class="sketch-thumb" src="thumbnails/popcorn.png" alt="popcorn" loading="lazy"></a>
+        <div class="sketch-info">
         <h3 class="sketch-title"><a href="sketches/popcorn/index.html">Popcorn</a></h3>
         <p class="sketch-description">Pickover attractor with tangent singularities forming web-like patterns.</p>
         <a href="sketches/popcorn/index.html" class="sketch-link">View →</a>
+      </div>
       </div>
     </div>
 
     <h2 class="section-title">Physics & Dynamics</h2>
     <div class="sketches-grid">
       <div class="sketch-card">
+        <a href="sketches/magnetic-pendulum/index.html"><img class="sketch-thumb" src="thumbnails/magnetic-pendulum.png" alt="magnetic-pendulum" loading="lazy"></a>
+        <div class="sketch-info">
         <h3 class="sketch-title"><a href="sketches/magnetic-pendulum/index.html">Magnetic Pendulum</a></h3>
         <p class="sketch-description">Three magnets, one pendulum. Initial conditions create fractal basin boundaries.</p>
         <a href="sketches/magnetic-pendulum/index.html" class="sketch-link">View →</a>
       </div>
+      </div>
       <div class="sketch-card">
+        <a href="sketches/hofstadter-butterfly/index.html"><img class="sketch-thumb" src="thumbnails/hofstadter-butterfly.png" alt="hofstadter-butterfly" loading="lazy"></a>
+        <div class="sketch-info">
         <h3 class="sketch-title"><a href="sketches/hofstadter-butterfly/index.html">Hofstadter Butterfly</a></h3>
         <p class="sketch-description">Energy spectrum of Bloch electrons. Fractal structure in quantum mechanics.</p>
         <a href="sketches/hofstadter-butterfly/index.html" class="sketch-link">View →</a>
+      </div>
       </div>
     </div>
 
     <h2 class="section-title">Mathematical Functions</h2>
     <div class="sketches-grid">
       <div class="sketch-card">
+        <a href="sketches/weierstrass/index.html"><img class="sketch-thumb" src="thumbnails/weierstrass.png" alt="weierstrass" loading="lazy"></a>
+        <div class="sketch-info">
         <h3 class="sketch-title"><a href="sketches/weierstrass/index.html">Weierstrass Function</a></h3>
         <p class="sketch-description">Continuous everywhere, differentiable nowhere. Infinitely jagged coastlines.</p>
         <a href="sketches/weierstrass/index.html" class="sketch-link">View →</a>
       </div>
+      </div>
       <div class="sketch-card">
+        <a href="sketches/domain-coloring/index.html"><img class="sketch-thumb" src="thumbnails/domain-coloring.png" alt="domain-coloring" loading="lazy"></a>
+        <div class="sketch-info">
         <h3 class="sketch-title"><a href="sketches/domain-coloring/index.html">Domain Coloring</a></h3>
         <p class="sketch-description">Complex function phase portraits. Poles, zeros, and branch cuts in color.</p>
         <a href="sketches/domain-coloring/index.html" class="sketch-link">View →</a>
       </div>
+      </div>
       <div class="sketch-card">
+        <a href="sketches/schwarz-christoffel/index.html"><img class="sketch-thumb" src="thumbnails/schwarz-christoffel.png" alt="schwarz-christoffel" loading="lazy"></a>
+        <div class="sketch-info">
         <h3 class="sketch-title"><a href="sketches/schwarz-christoffel/index.html">Schwarz-Christoffel</a></h3>
         <p class="sketch-description">Conformal maps transforming the unit disk to polygons.</p>
         <a href="sketches/schwarz-christoffel/index.html" class="sketch-link">View →</a>
       </div>
+      </div>
       <div class="sketch-card">
+        <a href="sketches/droste/index.html"><img class="sketch-thumb" src="thumbnails/droste.png" alt="droste" loading="lazy"></a>
+        <div class="sketch-info">
         <h3 class="sketch-title"><a href="sketches/droste/index.html">Droste Effect</a></h3>
         <p class="sketch-description">Infinite recursive zoom via complex logarithm.</p>
         <a href="sketches/droste/index.html" class="sketch-link">View →</a>
+      </div>
       </div>
     </div>
 
     <h2 class="section-title">Generative Patterns</h2>
     <div class="sketches-grid">
       <div class="sketch-card">
+        <a href="sketches/hanabi/index.html"><img class="sketch-thumb" src="thumbnails/hanabi.png" alt="hanabi" loading="lazy"></a>
+        <div class="sketch-info">
         <h3 class="sketch-title"><a href="sketches/hanabi/index.html">Hanabi 花火</a></h3>
         <p class="sketch-description">Japanese firework patterns inspired by traditional tenugui textiles. Click to launch.</p>
         <a href="sketches/hanabi/index.html" class="sketch-link">View →</a>
+      </div>
       </div>
     </div>
 
