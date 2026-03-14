@@ -152,7 +152,12 @@ class Hanabi {
     this.type = type;
     this.birth = frameCount;
     this.lifespan = random(300, 500);
-    this.maxRadius = random(50, 110);
+    // Varied sizes — some small, some much larger
+    const sizeRoll = random();
+    if (sizeRoll < 0.3) this.maxRadius = random(30, 55);       // small
+    else if (sizeRoll < 0.7) this.maxRadius = random(55, 110);  // medium
+    else if (sizeRoll < 0.9) this.maxRadius = random(110, 170);  // large
+    else this.maxRadius = random(170, 240);                      // extra large
     this.rotation = random(TWO_PI);
     this.rotSpeed = random(-0.002, 0.002);
     this.growDuration = random(30, 50);
@@ -161,9 +166,11 @@ class Hanabi {
     const combo = random(COMBOS);
     this.colors = combo.map(name => PALETTE[name]);
 
-    this.numRays = floor(random(14, 26));
-    this.innerRays = floor(random(8, 14));
-    this.outerRays = floor(random(14, 22));
+    // Scale ray count with size
+    const sizeFactor = map(this.maxRadius, 30, 240, 0.7, 1.5);
+    this.numRays = floor(random(14, 26) * sizeFactor);
+    this.innerRays = floor(random(8, 14) * sizeFactor);
+    this.outerRays = floor(random(14, 22) * sizeFactor);
 
     // Pre-compute outer dot offsets for dot cluster (avoids random() in draw)
     this.outerDotOffsets = [];
