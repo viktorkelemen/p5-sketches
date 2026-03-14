@@ -12,54 +12,96 @@ const PALETTE = {
   teal:   [120, 170, 155],
   mauve:  [160, 115, 155],
 };
+const PALETTE_KEYS = Object.keys(PALETTE);
 
 // Burst color combos seen on the fabric
+// Note: same colors in different order = different interleave pattern
 const COMBOS = [
   ['red', 'navy'],
   ['red', 'navy', 'teal'],
   ['red', 'teal', 'mauve'],
   ['navy', 'teal'],
   ['red', 'teal'],
-  ['navy', 'teal', 'red'],
+  ['navy', 'teal', 'red'],   // navy-first interleave
   ['red', 'mauve', 'teal'],
 ];
+
+// Layout constants — tweak these to adjust proportions
+const LAYOUT = {
+  // Petal distances (as fraction of radius)
+  petalStart: 0.18,
+  petalEnd: 0.75,
+  petalWidth: 0.08,
+  // Dual ring
+  innerStart: 0.08,
+  innerEnd: 0.35,
+  innerWidth: 0.06,
+  outerStart: 0.4,
+  outerEnd: 0.85,
+  outerWidth: 0.065,
+  // Dot cluster rings
+  dotInnerR: 0.25,
+  dotMidR: 0.5,
+  dotOuterR: 0.75,
+  dotInnerSize: 0.08,
+  dotMidSize: 0.065,
+  // Three-color burst
+  bgStart: 0.12,
+  bgEnd: 0.55,
+  bgWidth: 0.055,
+  fgStart: 0.15,
+  fgEnd: 0.8,
+  fgWidth: 0.07,
+  // Center dot
+  centerSize: 0.1,
+};
+
+// Minimum distance between hanabi centers
+const MIN_SPAWN_DIST = 80;
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
   noStroke();
 
-  // Spawn initial hanabi
   for (let i = 0; i < 7; i++) {
-    spawnHanabi(random(60, width - 60), random(60, height - 60));
+    trySpawnHanabi(random(60, width - 60), random(60, height - 60));
   }
 
-  // Scatter some small dots
   for (let i = 0; i < 30; i++) {
-    scatterDots.push({
-      x: random(width),
-      y: random(height),
-      size: random(2, 5),
-      color: PALETTE[random(['red', 'navy', 'teal', 'mauve'])],
-      birth: floor(random(-200, 0)),
-      lifespan: random(200, 400),
-    });
+    scatterDots.push(createScatterDot(floor(random(-200, 0))));
   }
+}
+
+function createScatterDot(birth) {
+  return {
+    x: random(width),
+    y: random(height),
+    size: random(2, 5),
+    color: PALETTE[random(PALETTE_KEYS)],
+    birth: birth,
+    lifespan: random(200, 400),
+  };
 }
 
 function draw() {
   background(...BG);
+  noStroke();
 
-  // Draw scatter dots
-  for (let i = scatterDots.length - 1; i >= 0; i--) {
+  drawScatterDots();
+  updateAndDrawHanabi();
+
+  if (frameCount % 80 === 0 && hanabi.length < 10) {
+    trySpawnHanabi(random(80, width - 80), random(80, height - 80));
+  }
+}
+
+function drawScatterDots() {
+  for (let i = 0; i < scatterDots.length; i++) {
     const d = scatterDots[i];
     const age = frameCount - d.birth;
     if (age > d.lifespan) {
-      d.x = random(width);
-      d.y = random(height);
-      d.birth = frameCount;
-      d.lifespan = random(200, 400);
-      d.color = PALETTE[random(['red', 'navy', 'teal', 'mauve'])];
-      d.size = random(2, 5);
+      scatterDots[i] = createScatterDot(frameCount);
+      continue;
     }
     let alpha = 255;
     if (age < 30) alpha = map(age, 0, 30, 0, 255);
@@ -67,20 +109,18 @@ function draw() {
     fill(...d.color, alpha);
     ellipse(d.x, d.y, d.size, d.size);
   }
+}
 
-  // Draw hanabi
-  for (let i = hanabi.length - 1; i >= 0; i--) {
+function updateAndDrawHanabi() {
+  let writeIdx = 0;
+  for (let i = 0; i < hanabi.length; i++) {
     hanabi[i].update();
     hanabi[i].draw();
-    if (hanabi[i].isDead()) {
-      hanabi.splice(i, 1);
+    if (!hanabi[i].isDead()) {
+      hanabi[writeIdx++] = hanabi[i];
     }
   }
-
-  // Auto-spawn
-  if (frameCount % 80 === 0 && hanabi.length < 10) {
-    spawnHanabi(random(80, width - 80), random(80, height - 80));
-  }
+  hanabi.length = writeIdx;
 }
 
 function mousePressed() {
@@ -91,6 +131,15 @@ function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
 }
 
+// Spawn only if far enough from existing hanabi
+function trySpawnHanabi(x, y) {
+  for (const h of hanabi) {
+    if (dist(x, y, h.x, h.y) < MIN_SPAWN_DIST) return;
+  }
+  spawnHanabi(x, y);
+}
+
+// Force spawn (click)
 function spawnHanabi(x, y) {
   const type = floor(random(4));
   hanabi.push(new Hanabi(x, y, type));
@@ -109,15 +158,23 @@ class Hanabi {
     this.growDuration = random(30, 50);
     this.fadeDuration = random(40, 70);
 
-    // Pick a color combo from the fabric
     const combo = random(COMBOS);
     this.colors = combo.map(name => PALETTE[name]);
 
-    // Burst params
     this.numRays = floor(random(14, 26));
-    // For dual-ring type
     this.innerRays = floor(random(8, 14));
     this.outerRays = floor(random(14, 22));
+
+    // Pre-compute outer dot offsets for dot cluster (avoids random() in draw)
+    this.outerDotOffsets = [];
+    const outerN = 16;
+    for (let i = 0; i < outerN; i++) {
+      this.outerDotOffsets.push({
+        angleFrac: i / outerN,
+        distJitter: random(-0.08, 0.08),
+        sizeFrac: random(0.035, 0.06),
+      });
+    }
   }
 
   getAge() { return frameCount - this.birth; }
@@ -133,7 +190,7 @@ class Hanabi {
     const age = this.getAge();
     if (age < this.growDuration) {
       const t = age / this.growDuration;
-      return t * t * (3 - 2 * t);
+      return t * t * (3 - 2 * t); // smoothstep
     }
     return 1;
   }
@@ -150,6 +207,7 @@ class Hanabi {
     push();
     translate(this.x, this.y);
     rotate(this.rotation);
+    noStroke();
 
     switch (this.type) {
       case 0: this.drawInterleavedPetals(r, alpha); break;
@@ -162,157 +220,144 @@ class Hanabi {
   }
 
   // Type 0: Interleaved colored petals — the main pattern on the fabric
-  // Tapered dashes radiating out, alternating 2-3 colors
   drawInterleavedPetals(r, alpha) {
     const n = this.numRays;
+    const L = LAYOUT;
     for (let i = 0; i < n; i++) {
       const angle = (TWO_PI / n) * i;
-      const col = this.colors[i % this.colors.length];
-      fill(...col, alpha);
-
+      fill(...this.colors[i % this.colors.length], alpha);
       push();
       rotate(angle);
-      // Teardrop petal — wider at tip, narrow at base
-      this.drawPetal(r * 0.18, r * 0.75, r * 0.08);
+      drawPetal(r * L.petalStart, r * L.petalEnd, r * L.petalWidth);
       pop();
     }
 
-    // Center dot
     fill(...this.colors[0], alpha);
-    ellipse(0, 0, r * 0.1, r * 0.1);
+    ellipse(0, 0, r * L.centerSize, r * L.centerSize);
   }
 
-  // Type 1: Dual ring — inner ring short dashes, outer ring longer, different colors
+  // Type 1: Dual ring — inner short dashes, outer longer, different colors
   drawDualRing(r, alpha) {
+    const L = LAYOUT;
+
     // Inner ring
     const innerN = this.innerRays;
     for (let i = 0; i < innerN; i++) {
       const angle = (TWO_PI / innerN) * i;
-      const col = this.colors[0];
-      fill(...col, alpha);
-
+      fill(...this.colors[0], alpha);
       push();
       rotate(angle);
-      this.drawPetal(r * 0.08, r * 0.35, r * 0.06);
+      drawPetal(r * L.innerStart, r * L.innerEnd, r * L.innerWidth);
       pop();
     }
 
-    // Outer ring
+    // Outer ring (offset rotation)
     const outerN = this.outerRays;
     const colIdx = this.colors.length > 1 ? 1 : 0;
     for (let i = 0; i < outerN; i++) {
-      const angle = (TWO_PI / outerN) * i + PI / outerN; // offset
-      const col = this.colors[i % 2 === 0 ? colIdx : (this.colors.length > 2 ? 2 : 0)];
-      fill(...col, alpha);
-
+      const angle = (TWO_PI / outerN) * i + PI / outerN;
+      const ci = i % 2 === 0 ? colIdx : (this.colors.length > 2 ? 2 : 0);
+      fill(...this.colors[ci], alpha);
       push();
       rotate(angle);
-      this.drawPetal(r * 0.4, r * 0.85, r * 0.065);
+      drawPetal(r * L.outerStart, r * L.outerEnd, r * L.outerWidth);
       pop();
     }
 
-    // Center
     fill(...this.colors[this.colors.length - 1], alpha);
-    ellipse(0, 0, r * 0.09, r * 0.09);
+    ellipse(0, 0, r * L.centerSize * 0.9, r * L.centerSize * 0.9);
   }
 
-  // Type 2: Dot cluster — concentric rings of dots (navy+mauve pattern from fabric)
+  // Type 2: Dot cluster — concentric rings of dots
   drawDotCluster(r, alpha) {
+    const L = LAYOUT;
+
     // Inner ring
     const innerN = 8;
-    const innerR = r * 0.25;
+    const innerR = r * L.dotInnerR;
     for (let i = 0; i < innerN; i++) {
       const angle = (TWO_PI / innerN) * i;
-      const col = this.colors[0];
-      fill(...col, alpha);
-      ellipse(cos(angle) * innerR, sin(angle) * innerR, r * 0.08, r * 0.08);
+      fill(...this.colors[0], alpha);
+      ellipse(cos(angle) * innerR, sin(angle) * innerR, r * L.dotInnerSize, r * L.dotInnerSize);
     }
 
     // Middle ring
     const midN = 12;
-    const midR = r * 0.5;
+    const midR = r * L.dotMidR;
+    const midCol = this.colors.length > 1 ? this.colors[1] : this.colors[0];
     for (let i = 0; i < midN; i++) {
       const angle = (TWO_PI / midN) * i + PI / midN;
-      const col = this.colors.length > 1 ? this.colors[1] : this.colors[0];
-      fill(...col, alpha);
-      ellipse(cos(angle) * midR, sin(angle) * midR, r * 0.065, r * 0.065);
+      fill(...midCol, alpha);
+      ellipse(cos(angle) * midR, sin(angle) * midR, r * L.dotMidSize, r * L.dotMidSize);
     }
 
-    // Outer scattered
-    const outerN = 16;
-    const outerR = r * 0.75;
-    for (let i = 0; i < outerN; i++) {
-      const angle = (TWO_PI / outerN) * i;
-      const dist = outerR + random(-r * 0.08, r * 0.08);
-      const col = this.colors[i % this.colors.length];
-      fill(...col, alpha * 0.7);
-      const s = r * random(0.035, 0.06);
-      ellipse(cos(angle) * dist, sin(angle) * dist, s, s);
+    // Outer scattered (pre-computed offsets)
+    const outerBaseR = r * L.dotOuterR;
+    for (let i = 0; i < this.outerDotOffsets.length; i++) {
+      const od = this.outerDotOffsets[i];
+      const angle = TWO_PI * od.angleFrac;
+      const d = outerBaseR + r * od.distJitter;
+      fill(...this.colors[i % this.colors.length], alpha * 0.7);
+      const s = r * od.sizeFrac;
+      ellipse(cos(angle) * d, sin(angle) * d, s, s);
     }
 
-    // Center
     fill(...this.colors[0], alpha);
-    ellipse(0, 0, r * 0.09, r * 0.09);
+    ellipse(0, 0, r * L.centerSize * 0.9, r * L.centerSize * 0.9);
   }
 
-  // Type 3: Three-color burst — like the big multicolor ones on the fabric
+  // Type 3: Three-color burst — layered foreground + background
   drawThreeColorBurst(r, alpha) {
     const n = this.numRays;
-    // Two layers — shorter background, longer foreground
-    // Background layer (every other, secondary color)
+    const L = LAYOUT;
+    const bgCol = this.colors.length > 2 ? this.colors[2] : this.colors[this.colors.length - 1];
+
+    // Background layer (every other ray)
     for (let i = 0; i < n; i += 2) {
       const angle = (TWO_PI / n) * i + PI / n * 0.5;
-      const col = this.colors.length > 2 ? this.colors[2] : this.colors[this.colors.length - 1];
-      fill(...col, alpha * 0.7);
-
+      fill(...bgCol, alpha * 0.7);
       push();
       rotate(angle);
-      this.drawPetal(r * 0.12, r * 0.55, r * 0.055);
+      drawPetal(r * L.bgStart, r * L.bgEnd, r * L.bgWidth);
       pop();
     }
 
     // Foreground layer — all rays, alternating 2 colors
     for (let i = 0; i < n; i++) {
       const angle = (TWO_PI / n) * i;
-      const col = this.colors[i % 2];
-      fill(...col, alpha);
-
+      fill(...this.colors[i % 2], alpha);
       push();
       rotate(angle);
-      this.drawPetal(r * 0.15, r * 0.8, r * 0.07);
+      drawPetal(r * L.fgStart, r * L.fgEnd, r * L.fgWidth);
       pop();
     }
 
     // Center accent
     fill(...this.colors[0], alpha);
-    ellipse(0, 0, r * 0.12, r * 0.12);
+    ellipse(0, 0, r * L.centerSize * 1.2, r * L.centerSize * 1.2);
     if (this.colors.length > 1) {
       fill(...this.colors[1], alpha);
-      ellipse(0, 0, r * 0.06, r * 0.06);
+      ellipse(0, 0, r * L.centerSize * 0.6, r * L.centerSize * 0.6);
     }
   }
+}
 
-  // Draw a tapered petal shape — narrow at start, wider at end (like the tenugui dashes)
-  drawPetal(startDist, endDist, maxWidth) {
-    const len = endDist - startDist;
-    beginShape();
-    // Taper: narrow at base (near center), wide at tip
-    const baseW = maxWidth * 0.3;
-    const tipW = maxWidth;
-    // Left edge
-    vertex(startDist, -baseW / 2);
-    // Tip (rounded with bezier)
-    bezierVertex(
-      startDist + len * 0.6, -tipW / 2,
-      endDist - len * 0.1, -tipW / 2,
-      endDist, 0
-    );
-    // Right edge back
-    bezierVertex(
-      endDist - len * 0.1, tipW / 2,
-      startDist + len * 0.6, tipW / 2,
-      startDist, baseW / 2
-    );
-    endShape(CLOSE);
-  }
+// Standalone petal draw — tapered: narrow at base (near center), wide at tip
+function drawPetal(startDist, endDist, maxWidth) {
+  const len = endDist - startDist;
+  const baseW = maxWidth * 0.3;
+  const tipW = maxWidth;
+  beginShape();
+  vertex(startDist, -baseW / 2);
+  bezierVertex(
+    startDist + len * 0.6, -tipW / 2,
+    endDist - len * 0.1, -tipW / 2,
+    endDist, 0
+  );
+  bezierVertex(
+    endDist - len * 0.1, tipW / 2,
+    startDist + len * 0.6, tipW / 2,
+    startDist, baseW / 2
+  );
+  endShape(CLOSE);
 }
