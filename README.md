@@ -71,17 +71,6 @@ Conformal maps that transform the unit disk to polygons. Watch how circles and r
 #### Droste Effect
 Infinite recursive zoom using complex logarithm: `exp(log(z) + iθ)`. Creates self-similar spiral patterns that zoom infinitely.
 
-### Saturn & Witchcraft Collection
-
-#### Saturn
-A cosmic visualization of Saturn with particle-based rings, orbiting moons, and atmospheric bands.
-
-#### Sigil
-A mystical pentagram with rotating runes, flickering candles, and particle effects. Click to conjure energy bursts.
-
-#### Saturn Occult
-Saturn as an ancient deity - combines cosmic imagery with occult symbols like hexagrams and alchemical sigils.
-
 ## Running the Sketches
 
 1. Open `index.html` in a modern web browser
